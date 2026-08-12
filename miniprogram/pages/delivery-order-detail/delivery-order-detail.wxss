@@ -1,0 +1,2 @@
+@import '../../app.wxss';
+.page-heading{display:flex;align-items:center;justify-content:space-between;gap:20rpx}.back-button{padding:12rpx 0;color:#718083}

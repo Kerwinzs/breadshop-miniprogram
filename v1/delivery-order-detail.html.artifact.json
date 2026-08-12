@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "prototype/delivery-order-detail.html",
+  "entry": "prototype/delivery-order-detail.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-04T02:42:55.080Z",
+  "updatedAt": "2026-08-04T02:42:55.080Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

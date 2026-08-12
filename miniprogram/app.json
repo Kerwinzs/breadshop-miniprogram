@@ -1,0 +1,19 @@
+{
+  "pages": [
+    "pages/home/home", "pages/products/products", "pages/delivery-products/delivery-products",
+    "pages/product-detail/product-detail", "pages/delivery-product-detail/delivery-product-detail",
+    "pages/cart/cart", "pages/delivery-cart/delivery-cart", "pages/pickup-checkout/pickup-checkout",
+    "pages/checkout/checkout", "pages/order-success/order-success", "pages/orders/orders",
+    "pages/order-detail/order-detail", "pages/delivery-order-detail/delivery-order-detail",
+    "pages/profile/profile", "pages/addresses/addresses", "pages/stores/stores"
+  ],
+  "window": {"navigationBarTextStyle":"black","navigationBarTitleText":"麦香小屋","navigationBarBackgroundColor":"#D3E8F4","backgroundColor":"#D3E8F4"},
+  "tabBar": {
+    "color":"#6f7d7d","selectedColor":"#d9828b","backgroundColor":"#FFFCF4","borderStyle":"white",
+    "list":[
+      {"pagePath":"pages/home/home","text":"首页","iconPath":"assets/tab/home.png","selectedIconPath":"assets/tab/home.png"},
+      {"pagePath":"pages/orders/orders","text":"订单","iconPath":"assets/tab/orders.png","selectedIconPath":"assets/tab/orders.png"},
+      {"pagePath":"pages/profile/profile","text":"个人","iconPath":"assets/tab/profile.png","selectedIconPath":"assets/tab/profile.png"}
+    ]
+  }
+}

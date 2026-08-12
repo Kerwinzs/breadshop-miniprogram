@@ -1,0 +1,12 @@
+@import '../../app.wxss';
+
+.delivery-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 18rpx; }
+.delivery-head .subtitle { margin-top: 10rpx; }
+.delivery-switch { flex: none; margin: 0; padding: 14rpx 17rpx; border: 2rpx solid #c7dce5; border-radius: 999rpx; background: #fffcf4; color: #b85e6d; font-size: 22rpx; line-height: 1.2; }
+.delivery-address { display: flex; align-items: center; gap: 14rpx; padding: 25rpx 24rpx; border: 2rpx solid #c7dce5; border-radius: 28rpx; background: #fffcf4; box-shadow: 0 12rpx 26rpx rgba(52, 78, 80, .08); }
+.address-pin { color: #c96f78; font-size: 36rpx; }.delivery-address .product-name { display: block; font-size: 29rpx; }.address-arrow { margin-left: auto; color: #718083; font-size: 38rpx; }
+.method-card { padding: 18rpx; border: 2rpx solid #c7dce5; border-radius: 28rpx; background: #fffcf4; box-shadow: 0 12rpx 26rpx rgba(52, 78, 80, .08); }.method-card .subtitle { margin: 15rpx 8rpx 2rpx; }
+.delivery-methods { display: flex; gap: 12rpx; padding: 7rpx; border-radius: 22rpx; background: #e7f3f8; }
+.delivery-method { flex: 1; height: 68rpx; margin: 0; padding: 0 8rpx; border: 0; border-radius: 17rpx; background: transparent; color: #718083; font-size: 26rpx; line-height: 68rpx; white-space: nowrap; }
+.delivery-method.active { background: #fffcf4; color: #b85e6d; font-weight: 700; box-shadow: 0 5rpx 12rpx rgba(52, 78, 80, .10); }
+.delivery-product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20rpx; }.delivery-product-card { min-width: 0; padding: 16rpx; border: 2rpx solid #c7dce5; border-radius: 28rpx; background: #fffcf4; box-shadow: 0 12rpx 25rpx rgba(52, 78, 80, .08); }.delivery-product-art { height: 190rpx; margin-bottom: 17rpx; }.delivery-product-card .product-name { display: block; font-size: 28rpx; }.delivery-product-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 8rpx; margin-top: 14rpx; }.delivery-product-foot .price { font-size: 28rpx; }.delivery-product-foot .stepper { gap: 7rpx; padding: 4rpx; }.delivery-product-foot .stepper button { width: 42rpx; height: 42rpx; font-size: 30rpx; }.delivery-product-foot .stepper text { font-size: 21rpx; }.delivery-cart-count { color: #344e50!important; font-weight: 700; }

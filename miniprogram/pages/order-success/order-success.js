@@ -1,0 +1,1 @@
+const store=require('../../utils/store');Page({data:{id:''},onLoad(q){this.setData({id:q.id||''})},orders(){wx.switchTab({url:'/pages/orders/orders'})},home(){wx.switchTab({url:'/pages/home/home'})}})

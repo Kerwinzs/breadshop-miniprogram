@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "order-success.html",
+  "entry": "order-success.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T06:39:26.881Z",
+  "updatedAt": "2026-07-29T06:39:26.881Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

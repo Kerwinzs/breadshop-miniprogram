@@ -1,0 +1,45 @@
+/* 麦香小屋：天蓝底、奶油白内容面、草莓粉强调。页面可按需扩展局部样式。 */
+page { background: #d3e8f4; color: #344e50; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif; }
+view, text, button { box-sizing: border-box; }
+button::after { border: 0; }
+.page { min-height: 100vh; padding: 32rpx 32rpx calc(152rpx + env(safe-area-inset-bottom)); background: linear-gradient(180deg, #d3e8f4 0%, #edf7fb 100%); }
+.tab-page { padding-bottom: calc(168rpx + env(safe-area-inset-bottom)); }
+.with-fixed-action { padding-bottom: calc(196rpx + env(safe-area-inset-bottom)); }
+.section { margin-top: 32rpx; }
+.card { padding: 28rpx; border: 2rpx solid #c7dce5; border-radius: 28rpx; background: #fffcf4; box-shadow: 0 14rpx 30rpx rgba(52, 78, 80, .09); }
+.title, .product-name, .mode-title { color: #344e50; font-family: "Iowan Old Style", "Baskerville", "Songti SC", Georgia, serif; font-weight: 700; }
+.title { font-size: 48rpx; line-height: 1.12; letter-spacing: -.06em; }
+.subtitle { display: block; color: #718083; font-size: 24rpx; line-height: 1.55; }
+.pill { display: inline-flex; align-items: center; padding: 9rpx 18rpx; border-radius: 999rpx; background: #ffe0e6; color: #b85e6d; font-size: 22rpx; }
+.btn { display: flex; align-items: center; justify-content: center; min-height: 88rpx; margin: 0; padding: 0 30rpx; border: 0; border-radius: 26rpx; background: #ffbcbd; color: #344e50; font-size: 28rpx; font-weight: 700; line-height: 1; }
+.btn[disabled] { background: #dbe8ed; color: #8a999d; }
+.btn-secondary { background: #e7f3f8; border: 2rpx solid #c7dce5; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; margin-bottom: 18rpx; }
+.section-heading { font-size: 34rpx; }
+.text-button { margin: 0; padding: 10rpx 0; border: 0; background: transparent; color: #b85e6d; font-size: 24rpx; }
+.notice { padding: 24rpx 26rpx; border-radius: 24rpx; background: #ffe0e6; color: #80555d; font-size: 24rpx; line-height: 1.55; }
+.scene-tag { display: inline-flex; padding: 8rpx 14rpx; border-radius: 999rpx; background: #ffe0e6; color: #b85e6d; font-size: 22rpx; font-weight: 700; }
+.price { color: #c96f78; font-size: 32rpx; font-weight: 800; }
+.price-prefix { font-size: 22rpx; }
+.muted { color: #718083; }
+.empty-state { padding: 86rpx 38rpx; text-align: center; border: 2rpx dashed #b8d5e2; border-radius: 30rpx; background: rgba(255, 252, 244, .72); }
+.empty-title { display: block; margin: 14rpx 0; font-family: "Iowan Old Style", "Baskerville", "Songti SC", Georgia, serif; font-size: 40rpx; font-weight: 700; }
+.empty-state .btn { margin-top: 30rpx; }
+.stepper { display: inline-flex; align-items: center; gap: 16rpx; padding: 6rpx; border-radius: 999rpx; background: #e7f3f8; }
+.stepper button { display: flex; align-items: center; justify-content: center; width: 52rpx; height: 52rpx; margin: 0; padding: 0; border: 0; border-radius: 50%; background: #fffcf4; color: #b85e6d; font-size: 36rpx; line-height: 1; }
+.stepper text { min-width: 26rpx; text-align: center; color: #344e50; font-size: 25rpx; font-weight: 700; }
+.bar { position: fixed; z-index: 10; left: 24rpx; right: 24rpx; bottom: 22rpx; padding: 18rpx 22rpx calc(18rpx + env(safe-area-inset-bottom)); border: 2rpx solid rgba(199, 220, 229, .9); border-radius: 30rpx; background: rgba(255, 252, 244, .97); box-shadow: 0 0 30rpx rgba(52, 78, 80, .16); }
+.bar-content { display: flex; align-items: center; justify-content: space-between; gap: 20rpx; }
+.bar-copy { display: flex; flex-direction: column; gap: 4rpx; min-width: 0; }
+.bar-copy text { font-size: 22rpx; color: #718083; }
+.bar .btn { min-width: 194rpx; min-height: 76rpx; font-size: 25rpx; }
+.action-bar { position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; padding: 18rpx 32rpx calc(18rpx + env(safe-area-inset-bottom)); border-top: 2rpx solid #c7dce5; background: rgba(255, 252, 244, .98); box-shadow: 0 -10rpx 28rpx rgba(52, 78, 80, .1); }
+.action-bar .btn { width: 100%; }
+.art { position: relative; overflow: hidden; border-radius: 22rpx; background: linear-gradient(135deg, #ffe0e6, #fffcf4 60%, #d3e8f4); }
+.art::before, .art::after { content: ""; position: absolute; border-radius: 50%; }
+.art::before { width: 72%; height: 48%; top: 26%; left: 14%; background: #ffbcbd; box-shadow: 34rpx -12rpx 0 #ffe0e6, -28rpx 20rpx 0 #d3e8f4; transform: rotate(-11deg); }
+.art::after { width: 38%; height: 20%; top: 42%; left: 31%; border: 5rpx solid rgba(255,252,244,.72); background: transparent; transform: rotate(-11deg); }
+.art-milk::before { background: #f3c9b6; box-shadow: 35rpx -12rpx 0 #ffe0e6, -26rpx 22rpx 0 #d3e8f4; }
+.art-red::before { background: #ef9fa6; box-shadow: 32rpx -14rpx 0 #ffe0e6, -30rpx 20rpx 0 #d3e8f4; }
+.art-blue::before { background: #9fcadf; box-shadow: 32rpx -14rpx 0 #ffe0e6, -30rpx 20rpx 0 #fffcf4; }
