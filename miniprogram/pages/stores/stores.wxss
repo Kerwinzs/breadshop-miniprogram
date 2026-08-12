@@ -1,0 +1,2 @@
+@import '../../app.wxss';
+.page-heading{display:flex;align-items:center;justify-content:space-between;gap:20rpx}.back-button{padding:12rpx 0;color:#718083}.store-list{display:grid;gap:18rpx;margin-top:28rpx}.store-card .product-name{font-size:32rpx}.store-card .subtitle{margin-top:9rpx}.store-select{width:100%;margin-top:24rpx;min-height:78rpx;font-size:25rpx}

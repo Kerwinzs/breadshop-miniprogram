@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "product-detail.html",
+  "entry": "product-detail.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T06:40:43.447Z",
+  "updatedAt": "2026-07-29T06:40:43.447Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

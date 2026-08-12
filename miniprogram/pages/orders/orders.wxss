@@ -1,0 +1,10 @@
+@import '../../app.wxss';
+
+.order-filters { display: flex; gap: 14rpx; margin: 26rpx 0 22rpx; padding: 10rpx; border-radius: 26rpx; background: rgba(255, 252, 244, .58); }
+.order-filter { flex: 1; min-width: 0; height: 68rpx; margin: 0; padding: 0 8rpx; border: 0; border-radius: 19rpx; background: transparent; color: #718083; font-size: 25rpx; line-height: 68rpx; white-space: nowrap; }
+.order-filter.active { background: #fffcf4; color: #b85e6d; font-weight: 700; box-shadow: 0 5rpx 12rpx rgba(52, 78, 80, .10); }
+.list { display: grid; gap: 18rpx; }
+.list .card { padding: 25rpx 27rpx; }
+.list .product-name { display: block; margin-top: 16rpx; font-size: 30rpx; }
+.list .subtitle { margin-top: 5rpx; }
+.list .row:last-child { margin-top: 14rpx; }

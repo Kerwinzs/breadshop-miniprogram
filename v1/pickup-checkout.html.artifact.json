@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "v1/pickup-checkout.html",
+  "entry": "v1/pickup-checkout.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-05T09:41:23.684Z",
+  "updatedAt": "2026-08-05T09:41:23.684Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

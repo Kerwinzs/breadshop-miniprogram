@@ -1,0 +1,2 @@
+@import '../../app.wxss';
+.delivery-tabs{display:flex;gap:12rpx;margin:26rpx 0;padding:7rpx;border-radius:22rpx;background:#e7f3f8}.delivery-tab{flex:1;height:68rpx;margin:0;padding:0 8rpx;border:0;border-radius:17rpx;background:transparent;color:#718083;font-size:26rpx;line-height:68rpx}.delivery-tab.active{background:#fffcf4;color:#b85e6d;font-weight:700;box-shadow:0 5rpx 12rpx rgba(52,78,80,.10)}

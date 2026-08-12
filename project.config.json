@@ -1,0 +1,19 @@
+{
+  "description": "面包坊小程序",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.17.1",
+  "appid": "wx65e43f28166f1457",
+  "projectname": "bakery-miniprogram",
+  "miniprogramRoot": "miniprogram/",
+  "simulatorPluginLibVersion": {}
+}

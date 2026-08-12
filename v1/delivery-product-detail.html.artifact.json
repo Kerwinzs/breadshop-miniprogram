@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "prototype/delivery-product-detail.html",
+  "entry": "prototype/delivery-product-detail.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-04T02:44:56.448Z",
+  "updatedAt": "2026-08-04T02:44:56.448Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

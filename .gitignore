@@ -1,0 +1,22 @@
+.DS_Store
+
+# 本地生成的 Python 缓存
+__pycache__/
+*.py[cod]
+
+# Codex / 本机辅助文件，不属于项目交付物
+.od-skills/
+
+# 常见本地依赖、构建和环境文件
+node_modules/
+dist/
+build/
+coverage/
+.env
+.env.*
+*.log
+*.tmp
+
+# 编辑器配置
+.vscode/
+.idea/

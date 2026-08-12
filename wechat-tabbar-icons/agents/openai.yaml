@@ -1,0 +1,4 @@
+interface:
+  display_name: "小程序底部导航图标"
+  short_description: "生成并验收小程序 TabBar 本地图标"
+  default_prompt: "使用 $wechat-tabbar-icons 读取当前小程序 app.json 和品牌规范，为 miniprogram/assets/tab/ 生成 TabBar 普通态与选中态 PNG；菜单默认使用首页、订单、个人。"

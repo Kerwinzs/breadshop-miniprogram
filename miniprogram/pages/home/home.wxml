@@ -1,0 +1,15 @@
+<view class="page tab-page">
+  <view class="home-location" bindtap="toStores">
+    <text class="location-mark">⌖</text><view><text class="location-name">{{store?store.name:'请选择自取门店'}}</text><text class="subtitle">{{store?('距你 '+store.distanceText+' · '+(store.status==='open'?'营业中':'已打烊')):'点击选择方便取货的门店'}}</text></view>
+    <text class="location-arrow">›</text>
+  </view>
+  <view class="hero home-hero"><text class="hero-kicker">08:00 — 21:00 / 今日现烤</text><text class="hero-title">把刚出炉的香气，带回家。</text><text class="hero-copy">伯爵茶可颂限定回归，下午三点后售罄概率较高。</text><text class="pill hero-pill">新品尝鲜 · 第二件立减 ¥4</text></view>
+  <view class="scene-grid section">
+    <view class="scene-card pickup-scene" data-url="/pages/products/products" bindtap="go"><text class="scene-eyebrow">PICK UP</text><text class="mode-title">到店自取</text><text class="subtitle">免配送费，出炉后为你保留</text><text class="scene-arrow">→</text></view>
+    <view class="scene-card delivery-scene" data-url="/pages/delivery-products/delivery-products" bindtap="go"><text class="scene-eyebrow">DELIVERY</text><text class="mode-title">外卖/邮寄</text><text class="subtitle">同城外卖或快递寄送</text><text class="scene-arrow">→</text></view>
+  </view>
+  <view class="section"><view class="section-head"><text class="title section-heading">今日推荐</text><button class="text-button" data-url="/pages/products/products" bindtap="go">查看全部</button></view>
+    <view class="recommend-grid"><block wx:for="{{products}}" wx:key="id"><view class="recommend-card" data-id="{{item.id}}" bindtap="chooseScene"><view class="art recommend-art {{item.artClass}}"></view><text class="product-name">{{item.name}}</text><text class="subtitle">{{item.desc}}</text><text class="price">{{item.priceText}}</text></view></block></view>
+  </view>
+  <view class="notice section">活动公告：到店自取满 ¥49 赠法棍切片一份，赠品数量有限。</view>
+</view>

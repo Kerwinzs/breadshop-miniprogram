@@ -1,0 +1,9 @@
+<view class="page with-fixed-action">
+  <view class="checkout-header"><text class="scene-tag">到店自取订单</text><text class="title">确认订单</text><text class="subtitle">无需支付，下单后门店即开始制作</text></view>
+  <view class="card section store-checkout" bindtap="toStores"><view><text class="checkout-label">取货门店</text><text class="product-name">{{store?store.name:'请选择自取门店'}}</text><text class="subtitle">{{store?(store.address+' · '+store.businessHours):'点击选择门店'}}</text><text wx:if="{{storeMessage}}" class="subtitle">{{storeMessage}}</text></view><text class="store-arrow">›</text></view>
+  <view class="card section"><view class="section-head"><text class="product-name">商品明细</text><button class="text-button" bindtap="back">返回修改</button></view><block wx:for="{{items}}" wx:key="id"><view class="goods-row"><view><text>{{item.name}}</text><text class="subtitle">{{item.specName}} × {{item.quantity}}</text></view><text>{{item.lineTotal}}</text></view></block></view>
+  <view class="card section"><text class="product-name">费用明细</text><view class="fee-row"><text>商品小计</text><text>{{total}}</text></view><view class="fee-row fee-total"><text>合计</text><text class="price">{{total}}</text></view><text class="subtitle fee-note">到店自取不收取保温包装费、配送费或邮费</text></view>
+  <view class="notice section">无需支付：确认后只生成一张“已下单”自取订单，并清空自取购物车。</view>
+  <view wx:if="{{unavailableMessage}}" class="notice section">{{unavailableMessage}}</view>
+  <view class="action-bar"><button class="btn" loading="{{submitting}}" disabled="{{submitting || !items.length || unavailableItems.length || !store || store.status!=='open'}}" bindtap="submit">确认下单 · {{total}}</button></view>
+</view>

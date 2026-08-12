@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "cart.html",
+  "entry": "cart.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-07-29T06:39:26.877Z",
+  "updatedAt": "2026-07-29T06:39:26.877Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

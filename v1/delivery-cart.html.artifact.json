@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "kind": "html",
+  "title": "prototype/delivery-cart.html",
+  "entry": "prototype/delivery-cart.html",
+  "renderer": "html",
+  "status": "complete",
+  "exports": [
+    "html",
+    "pdf",
+    "zip"
+  ],
+  "createdAt": "2026-08-04T02:47:33.946Z",
+  "updatedAt": "2026-08-04T02:47:33.946Z",
+  "metadata": {
+    "inferred": true,
+    "reconciled": true
+  }
+}

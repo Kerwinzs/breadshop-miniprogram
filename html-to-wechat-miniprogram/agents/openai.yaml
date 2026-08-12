@@ -1,0 +1,4 @@
+interface:
+  display_name: "HTML 转微信小程序"
+  short_description: "按微信规范转换 HTML/Web 原型为小程序"
+  default_prompt: "使用 $html-to-wechat-miniprogram 将这个 HTML/Web 原型转换成符合微信规范的小程序。"
