@@ -1,14 +1,17 @@
 const { products, stores } = require('./mock')
 const feeService = require('./fee-service')
+const catalogCache = require('./catalog-cache')
+const catalogLocal = require('./catalog-local')
 const STORAGE_KEY = 'breadshopState'
 const PICKUP_FLOW = ['已下单', '制作中', '待自取', '已完成']
 
 function createInitialState() { return { purchaseScene: 'pickup', deliveryMethod: 'local', storeId: '', addressId: '', addresses: [], pickupCartItems: [], deliveryCartItems: [], orders: [] } }
 function priceToFen(value) { const number = Number(String(value || '').replace(/[¥,]/g, '')); return Number.isFinite(number) ? Math.round(number * 100) : null }
+function getProduct(productId) { return catalogCache.getProduct(productId) || products.find((entry) => entry.id === productId) || null }
 function normalizeCartItem(item) {
   if (!item || typeof item !== 'object') return null
   const productId = item.productId || String(item.id || '').split(/[:-]/)[0]
-  const product = products.find((entry) => entry.id === productId)
+  const product = getProduct(productId)
   const spec = (product && product.specs || []).find((entry) => entry.id === item.specId || entry.name === item.specName || entry.name === item.spec) || null
   const specId = item.specId || (spec && spec.id) || 'standard'
   const specName = item.specName || item.spec || (spec && spec.name) || '标准规格'
@@ -47,17 +50,17 @@ function saveState(state) { const next = ensureStateShape(state); wx.setStorageS
 function patchState(partial) { return saveState(Object.assign({}, getState(), partial || {})) }
 function getCart(scene) { const state = getState(); return scene === 'delivery' ? state.deliveryCartItems : state.pickupCartItems }
 function isCartItemAvailable(item, scene, deliveryMethod) {
-  const product = products.find((entry) => entry.id === item.productId)
+  const product = getProduct(item.productId)
   if (!product || product.soldOut) return false
-  if (scene === 'pickup') return product.supportsLocal !== false
-  return deliveryMethod === 'shipping' ? product.supportsShipping !== false : product.supportsLocal !== false
+  if (scene === 'pickup') return product.supportsPickup !== undefined ? product.supportsPickup !== false : product.supportsLocal !== false
+  return deliveryMethod === 'shipping' ? product.supportsShipping !== false : (product.supportsLocalDelivery !== undefined ? product.supportsLocalDelivery !== false : product.supportsLocal !== false)
 }
 function getUnavailableCartItems(scene) {
   const state = getState(), method = state.deliveryMethod || 'local'
   return getCart(scene).filter((item) => !isCartItemAvailable(item, scene, method))
 }
 function setCart(scene, items) { return patchState({ [scene === 'delivery' ? 'deliveryCartItems' : 'pickupCartItems']: mergeCartItems([], items) }) }
-function getStore(storeId) { return stores.find((item) => item.id === storeId) || null }
+function getStore(storeId) { return catalogCache.getStore(storeId) || catalogLocal.getStore(storeId) || stores.find((item) => item.id === storeId) || null }
 function getSelectedStore() { return getStore(getState().storeId) }
 function setSelectedStore(storeId) { if (!getStore(storeId)) return null; patchState({ storeId }); return getStore(storeId) }
 function getSelectedAddress() { const state = getState(); return state.addresses.find((address) => address.id === state.addressId) || null }
@@ -90,6 +93,6 @@ function createDeliveryOrder() {
   const order = { id: `MOCK-${Date.now()}`, purchaseScene: 'delivery', scene: method === 'shipping' ? '快递邮寄' : '同城外卖', sceneLabel: method === 'shipping' ? '快递邮寄' : '同城外卖', deliveryMethod: method, orderStatus: '已下单', address: Object.assign({}, address, { fullAddress: `${address.province}${address.city}${address.district}${address.detail}` }), items: snapshotItems, subtotalFen, insulationFeeFen: fee.insulationFeeFen, deliveryFeeFen: fee.deliveryFeeFen, postageFen: fee.postageFen, totalFen, createdAt: new Date().toISOString() }
   saveState(Object.assign({}, state, { deliveryCartItems: [], orders: [order].concat(state.orders) })); return order
 }
-function reorder(orderId) { const order = getOrder(orderId); if (!order || order.orderStatus !== '已完成') return { added: 0, unavailable: [] }; const available = [], unavailable = []; (order.items || []).forEach((item) => { const product = products.find((entry) => entry.id === item.productId); const method = order.purchaseScene === 'delivery' ? order.deliveryMethod : null; if (!product || product.soldOut || (method === 'local' && product.supportsLocal === false) || (method === 'shipping' && product.supportsShipping === false)) unavailable.push(item.name); else available.push(item) }); setCart(order.purchaseScene === 'delivery' ? 'delivery' : 'pickup', mergeCartItems(getCart(order.purchaseScene === 'delivery' ? 'delivery' : 'pickup'), available)); if (order.purchaseScene === 'delivery') patchState({ deliveryMethod: order.deliveryMethod }); return { added: available.length, unavailable }
+function reorder(orderId) { const order = getOrder(orderId); if (!order || order.orderStatus !== '已完成') return { added: 0, unavailable: [] }; const available = [], unavailable = []; (order.items || []).forEach((item) => { const product = getProduct(item.productId); const method = order.purchaseScene === 'delivery' ? order.deliveryMethod : null; const pickupUnavailable = !product || product.supportsPickup === false; const localUnavailable = !product || product.supportsLocalDelivery === false; const shippingUnavailable = !product || product.supportsShipping === false; if (!product || product.soldOut || (method === null && pickupUnavailable) || (method === 'local' && localUnavailable) || (method === 'shipping' && shippingUnavailable)) unavailable.push(item.name); else available.push(item) }); setCart(order.purchaseScene === 'delivery' ? 'delivery' : 'pickup', mergeCartItems(getCart(order.purchaseScene === 'delivery' ? 'delivery' : 'pickup'), available)); if (order.purchaseScene === 'delivery') patchState({ deliveryMethod: order.deliveryMethod }); return { added: available.length, unavailable }
 }
 module.exports = { STORAGE_KEY, createInitialState, ensureStateShape, getState, saveState, patchState, getCart, isCartItemAvailable, getUnavailableCartItems, setCart, getOrders, getOrder, createOrder, updateOrder, getStore, getSelectedStore, setSelectedStore, getSelectedAddress, setSelectedAddress, saveAddress, removeAddress, normalizeCartItem, mergeCartItems, createPickupOrder, createDeliveryOrder, cancelOrder, advanceMockOrder, advanceDeliveryOrder, reorder }
