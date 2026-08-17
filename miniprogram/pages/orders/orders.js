@@ -1,8 +1,9 @@
 const store = require('../../utils/store')
 const orderRemote = require('../../utils/order-repository')
 const { formatFen } = require('../../utils/format')
+const { formatOrderStatus } = require('../../utils/order-status')
 function cartTotalFen(value) { const number = Number(String(value || '').replace(/[¥,]/g, '')); return Number.isFinite(number) ? Math.round(number * 100) : null }
-function view(order) { return Object.assign({}, order, { id: order.orderNo || order.id, scene: order.sceneLabel || (order.purchaseScene === 'pickup' ? '到店自取' : order.deliveryMethod === 'shipping' ? '快递邮寄' : '同城外卖'), itemsText: (order.items || []).map((item) => `${item.productName || item.name}${item.specName ? '·' + item.specName : ''} × ${item.quantity}`).join('、'), total: formatFen(order.totalFen !== undefined ? order.totalFen : cartTotalFen(order.total)), pickupInfo: order.storeSnapshot ? `${order.storeSnapshot.name}自取` : order.addressSnapshot ? order.addressSnapshot.fullAddress : '配送订单' }) }
+function view(order) { return Object.assign({}, order, { id: order.orderNo || order.id, orderStatus: formatOrderStatus(order.orderStatus), scene: order.sceneLabel || (order.purchaseScene === 'pickup' ? '到店自取' : order.deliveryMethod === 'shipping' ? '快递邮寄' : '同城外卖'), itemsText: (order.items || []).map((item) => `${item.productName || item.name}${item.specName ? '·' + item.specName : ''} × ${item.quantity}`).join('、'), total: formatFen(order.totalFen !== undefined ? order.totalFen : cartTotalFen(order.total)), pickupInfo: order.storeSnapshot ? `${order.storeSnapshot.name}自取` : order.addressSnapshot ? order.addressSnapshot.fullAddress : '配送订单' }) }
 Page({
   data: { orders: [], filter: 'all' },
   onShow() { this.refresh() },

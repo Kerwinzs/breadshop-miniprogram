@@ -1,8 +1,8 @@
 const store = require('../../utils/store'), remote = require('../../utils/order-repository')
 const { formatFen } = require('../../utils/format')
-const STATUS = { placed: '已下单', preparing: '制作中', ready_for_pickup: '待自取', completed: '已完成', canceled: '已取消' }
+const { formatOrderStatus } = require('../../utils/order-status')
 function isDev() { return typeof __wxConfig !== 'undefined' && __wxConfig.envVersion !== 'release' }
-function normalize(raw) { if (!raw) return null; const snapshot = raw.storeSnapshot || raw.store; const store = snapshot && Object.assign({}, snapshot, { address: snapshot.address || snapshot.addressText }); const order = Object.assign({}, raw, { id: raw.orderNo || raw.id, orderStatus: STATUS[raw.orderStatus] || raw.orderStatus, total: formatFen(raw.totalFen), store, items: (raw.items || []).map((item) => Object.assign({}, item, { name: item.productName || item.name, lineTotal: formatFen(item.lineTotalFen) })) }); return order }
+function normalize(raw) { if (!raw) return null; const snapshot = raw.storeSnapshot || raw.store; const store = snapshot && Object.assign({}, snapshot, { address: snapshot.address || snapshot.addressText }); const order = Object.assign({}, raw, { id: raw.orderNo || raw.id, orderStatus: formatOrderStatus(raw.orderStatus), total: formatFen(raw.totalFen), store, items: (raw.items || []).map((item) => Object.assign({}, item, { name: item.productName || item.name, lineTotal: formatFen(item.lineTotalFen) })) }); return order }
 Page({
   data: { order: null, canCancel: false, canReorder: false, canAdvance: false, isDev: false },
   onLoad(q) { this.id = q.id },
