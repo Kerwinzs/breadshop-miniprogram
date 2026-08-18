@@ -1,0 +1,13 @@
+<view class="page regression-page">
+  <view wx:if="{{!isDev}}" class="card blocked-card"><text class="title">仅开发环境可用</text><text class="subtitle">发布版不会执行回归请求。</text></view>
+  <block wx:if="{{isDev}}">
+    <view class="hero"><text class="eyebrow">REAL WECHAT REGRESSION</text><text class="title">开发者回归</text><text class="subtitle">使用当前已登录的真实微信身份，自动验证 CloudBase 的安全边界。</text></view>
+    <view class="card section"><view class="row"><text class="product-name">测试准备</text><text class="pill {{ready?'pill-ok':'pill-wait'}}">{{ready?'已准备':'读取中'}}</text></view><text class="subtitle">{{contextMessage}}</text><text wx:if="{{addressLabel}}" class="detail">地址：{{addressLabel}}</text><text wx:if="{{productLabel}}" class="detail">商品：{{productLabel}}</text></view>
+    <view class="notice section"><text>说明</text><text>测试会新增少量回归订单和报价，不会删除已有数据。点击开始前会再次确认。</text></view>
+    <button class="primary-button section" loading="{{loading}}" disabled="{{!ready||loading}}" bindtap="runAll">{{loading?'测试进行中…':'开始自动回归'}}</button>
+    <button class="secondary-button" disabled="{{loading}}" bindtap="refresh">重新读取测试数据</button>
+    <view class="section results"><view class="section-head"><text class="title section-heading">测试结果</text><text class="service-note">过期测试约需 10 分钟</text></view><view wx:for="{{tests}}" wx:key="key" class="result-card"><view class="row"><text class="result-title">{{item.title}}</text><text class="pill status-{{item.status}}">{{item.status==='pass'?'通过':item.status==='fail'?'失败':item.status==='blocked'?'待条件':item.status==='running'?'进行中':'未开始'}}</text></view><text class="subtitle">{{item.message}}</text></view></view>
+    <view wx:if="{{runningExpiry || expiryReady}}" class="expiry-bar"><text>报价过期测试：{{expiryRemaining}}</text><button wx:if="{{expiryReady}}" class="expiry-check" bindtap="checkExpiryNow">检查报价过期</button></view>
+    <view class="section trace-panel"><view class="section-head"><text class="title section-heading">调用记录</text><button class="text-button" bindtap="copyTraces">复制全部</button></view><text class="subtitle">每条记录包含 requestId、业务请求标识、函数、action、开始/结束时间、结果、errorCode/message 和脱敏原始摘要。</text><view wx:for="{{traces}}" wx:key="requestId" class="trace-card"><text class="trace-line">{{item.startedAt}} → {{item.finishedAt}} · {{item.result}}</text><text class="trace-line">requestId: {{item.requestId}}</text><text class="trace-line">业务标识: {{item.businessRequestId}}</text><text class="trace-line">{{item.functionName}} / {{item.action}} · {{item.errorCode || 'OK'}}</text><text class="trace-line">message: {{item.message || '—'}}</text><text wx:if="{{item.transportRequestId}}" class="trace-line">CloudBase requestID: {{item.transportRequestId}}</text><text class="trace-raw">原始摘要: {{item.rawSummary}}</text></view></view>
+  </block>
+</view>

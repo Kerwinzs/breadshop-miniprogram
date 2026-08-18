@@ -1,0 +1,21 @@
+@import '../../app.wxss';
+.regression-page { padding-bottom: calc(48rpx + env(safe-area-inset-bottom)); }
+.hero { margin: 0 -32rpx 24rpx; padding: 42rpx 34rpx 38rpx; background: linear-gradient(135deg, #e7f3f8, #fffcf4 72%); border-bottom: 2rpx solid #c7dce5; }
+.eyebrow { display: block; color: #b85e6d; font-size: 19rpx; font-weight: 700; letter-spacing: 2rpx; }
+.hero .title { display: block; margin: 10rpx 0; font-family: "Iowan Old Style", "Baskerville", "Songti SC", Georgia, serif; font-size: 48rpx; font-weight: 700; }
+.hero .subtitle { max-width: 640rpx; line-height: 1.6; }
+.row { display: flex; align-items: center; justify-content: space-between; gap: 18rpx; }
+.pill { flex: none; padding: 8rpx 15rpx; border-radius: 999rpx; font-size: 20rpx; }
+.pill-ok,.status-pass { background: #d9f0e5; color: #2f7756; }.pill-wait,.status-idle { background: #e7f3f8; color: #607478; }.status-running { background: #ffe8e9; color: #b85e6d; }.status-fail { background: #f8d5d7; color: #a53e4d; }.status-blocked { background: #fff0c7; color: #8a651e; }
+.detail { display: block; margin-top: 12rpx; color: #607478; font-size: 22rpx; line-height: 1.45; }
+.notice { display: flex; flex-direction: column; gap: 8rpx; padding: 22rpx 24rpx; border-radius: 24rpx; background: #fff0c7; color: #765c2a; font-size: 22rpx; line-height: 1.5; }
+.notice text:first-child { font-weight: 700; color: #604715; }
+.primary-button,.secondary-button { border-radius: 999rpx; font-size: 28rpx; }.primary-button { background: #b85e6d; color: #fffcf4; }.secondary-button { margin: 18rpx 0 8rpx; border: 2rpx solid #c7dce5; background: #fffcf4; color: #607478; }
+.results { margin-top: 28rpx; }.result-card { display: flex; flex-direction: column; gap: 10rpx; margin-top: 14rpx; padding: 22rpx 24rpx; border: 2rpx solid #c7dce5; border-radius: 24rpx; background: #fffcf4; }.result-title { color: #344e50; font-size: 28rpx; font-weight: 700; }.result-card .subtitle { line-height: 1.5; }
+.expiry-bar { position: fixed; left: 24rpx; right: 24rpx; bottom: calc(24rpx + env(safe-area-inset-bottom)); padding: 20rpx; border-radius: 999rpx; background: #344e50; color: #fffcf4; text-align: center; font-size: 23rpx; box-shadow: 0 12rpx 24rpx rgba(52,78,80,.2); }
+.expiry-check { display: inline-block; margin-left: 14rpx; padding: 8rpx 16rpx; border-radius: 999rpx; background: #fffcf4; color: #344e50; font-size: 22rpx; line-height: 1.4; }
+.trace-panel { margin-top: 28rpx; padding-bottom: 40rpx; }
+.trace-card { margin-top: 14rpx; padding: 18rpx 20rpx; border: 2rpx solid #c7dce5; border-radius: 18rpx; background: #f7fbfc; }
+.trace-line,.trace-raw { display: block; color: #344e50; font-size: 20rpx; line-height: 1.45; word-break: break-all; }
+.trace-raw { margin-top: 8rpx; color: #607478; font-family: monospace; }
+.blocked-card { margin-top: 24rpx; }
