@@ -7,6 +7,7 @@ const ADDRESS_FIELDS = ['contactName', 'phone', 'province', 'city', 'district', 
 function ok(data) { return { ok: true, data } }
 function fail(code, message) { return { ok: false, error: { code, message } } }
 function openid() { return cloud.getWXContext().OPENID }
+function validId(value) { return typeof value === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/.test(value) }
 function validPhone(phone) { return /^1\d{10}$/.test(String(phone || '')) }
 function normalize(input) {
   const value = input && typeof input === 'object' ? input : {}
@@ -21,47 +22,79 @@ function validate(address) {
   return ''
 }
 function dto(doc) {
-  const result = Object.assign({}, doc)
-  delete result.ownerOpenId
-  delete result._openid
-  return Object.assign(result, { id: doc.addressId || doc._id })
+  const result = {}
+  ADDRESS_FIELDS.concat(['isDefault']).forEach((key) => { result[key] = doc[key] })
+  return Object.assign(result, { id: doc.addressId })
 }
-async function clearDefault(owner, exceptId) {
-  const result = await db.collection('addresses').where({ ownerOpenId: owner, isDefault: true }).get()
-  await Promise.all((result.data || []).filter((item) => item.addressId !== exceptId).map((item) => db.collection('addresses').doc(item._id).update({ data: { isDefault: false, updatedAt: db.serverDate() } })))
+function transactionRequired() { return typeof db.runTransaction === 'function' }
+async function touchUserLock(transaction, owner) {
+  const result = await transaction.collection('users').where({ openid: owner }).limit(1).get()
+  const user = result.data && result.data[0]
+  if (user && user._id) await transaction.collection('users').doc(user._id).update({ data: { updatedAt: db.serverDate() } })
+}
+async function clearDefault(transaction, owner, exceptId) {
+  const result = await transaction.collection('addresses').where({ ownerOpenId: owner, isDefault: true }).get()
+  for (const item of (result.data || [])) {
+    if (item.addressId !== exceptId) await transaction.collection('addresses').doc(item._id).update({ data: { isDefault: false, updatedAt: db.serverDate() } })
+  }
 }
 async function list(owner) {
   const result = await db.collection('addresses').where({ ownerOpenId: owner }).limit(100).get()
   return { addresses: (result.data || []).map(dto) }
 }
 async function save(owner, event) {
+  if (!transactionRequired()) return fail('INTERNAL_ERROR', '地址服务未启用事务')
   const address = normalize(event.address)
   const error = validate(address)
   if (error) return fail(error, '请完善收货地址')
-  const addressId = typeof event.addressId === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$/.test(event.addressId) ? event.addressId : `address-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
-  const existing = await db.collection('addresses').where({ ownerOpenId: owner, addressId }).limit(1).get()
-  const anyAddress = await db.collection('addresses').where({ ownerOpenId: owner }).limit(1).get()
-  if (!anyAddress.data || !anyAddress.data[0]) address.isDefault = true
-  const now = db.serverDate()
-  const data = Object.assign(address, { addressId, ownerOpenId: owner, updatedAt: now })
-  if (address.isDefault) await clearDefault(owner, addressId)
-  if (existing.data && existing.data[0]) await db.collection('addresses').doc(existing.data[0]._id).update({ data })
-  else await db.collection('addresses').add({ data: Object.assign(data, { createdAt: now }) })
-  const saved = await db.collection('addresses').where({ ownerOpenId: owner, addressId }).limit(1).get()
-  return { address: dto(saved.data[0]) }
+  const addressId = validId(event.addressId) ? event.addressId : `address-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+  return db.runTransaction(async (transaction) => {
+    await touchUserLock(transaction, owner)
+    const collection = transaction.collection('addresses')
+    const existingResult = await collection.where({ ownerOpenId: owner, addressId }).limit(1).get()
+    const allResult = await collection.where({ ownerOpenId: owner }).limit(100).get()
+    const existing = existingResult.data && existingResult.data[0]
+    const hasAny = Boolean(allResult.data && allResult.data[0])
+    const shouldBeDefault = !hasAny || address.isDefault
+    const data = Object.assign({}, address, { addressId, ownerOpenId: owner, isDefault: shouldBeDefault, updatedAt: db.serverDate() })
+    if (shouldBeDefault) await clearDefault(transaction, owner, addressId)
+    if (existing) await collection.doc(existing._id).update({ data })
+    else await collection.add({ data: Object.assign(data, { createdAt: db.serverDate() }) })
+    const saved = await collection.where({ ownerOpenId: owner, addressId }).limit(1).get()
+    return { address: dto(saved.data[0]) }
+  })
 }
 async function remove(owner, addressId) {
-  const result = await db.collection('addresses').where({ ownerOpenId: owner, addressId }).limit(1).get()
-  if (!result.data || !result.data[0]) return fail('ADDRESS_NOT_FOUND', '地址不存在')
-  await db.collection('addresses').doc(result.data[0]._id).remove()
-  return { addressId }
+  if (!transactionRequired()) return fail('INTERNAL_ERROR', '地址服务未启用事务')
+  if (!validId(addressId)) return fail('INVALID_INPUT', '地址标识无效')
+  return db.runTransaction(async (transaction) => {
+    await touchUserLock(transaction, owner)
+    const collection = transaction.collection('addresses')
+    const result = await collection.where({ ownerOpenId: owner, addressId }).limit(1).get()
+    const target = result.data && result.data[0]
+    if (!target) return fail('ADDRESS_NOT_FOUND', '地址不存在')
+    const all = await collection.where({ ownerOpenId: owner }).limit(100).get()
+    await collection.doc(target._id).remove()
+    if (target.isDefault) {
+      const replacement = (all.data || []).find((item) => item.addressId !== addressId)
+      if (replacement) await collection.doc(replacement._id).update({ data: { isDefault: true, updatedAt: db.serverDate() } })
+    }
+    return { addressId }
+  })
 }
 async function setDefault(owner, addressId) {
-  const result = await db.collection('addresses').where({ ownerOpenId: owner, addressId }).limit(1).get()
-  if (!result.data || !result.data[0]) return fail('ADDRESS_NOT_FOUND', '地址不存在')
-  await clearDefault(owner, addressId)
-  await db.collection('addresses').doc(result.data[0]._id).update({ data: { isDefault: true, updatedAt: db.serverDate() } })
-  return { address: dto(Object.assign({}, result.data[0], { isDefault: true })) }
+  if (!transactionRequired()) return fail('INTERNAL_ERROR', '地址服务未启用事务')
+  if (!validId(addressId)) return fail('INVALID_INPUT', '地址标识无效')
+  return db.runTransaction(async (transaction) => {
+    await touchUserLock(transaction, owner)
+    const collection = transaction.collection('addresses')
+    const result = await collection.where({ ownerOpenId: owner, addressId }).limit(1).get()
+    const target = result.data && result.data[0]
+    if (!target) return fail('ADDRESS_NOT_FOUND', '地址不存在')
+    await clearDefault(transaction, owner, addressId)
+    await collection.doc(target._id).update({ data: { isDefault: true, updatedAt: db.serverDate() } })
+    return { address: dto(Object.assign({}, target, { isDefault: true })) }
+  })
 }
 exports.main = async (event) => {
   const owner = openid()
@@ -78,3 +111,5 @@ exports.main = async (event) => {
     return fail('INTERNAL_ERROR', '地址服务暂时不可用')
   }
 }
+
+module.exports = Object.assign(exports, { normalize, validate, dto })

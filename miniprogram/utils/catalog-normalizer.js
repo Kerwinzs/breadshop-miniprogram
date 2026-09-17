@@ -20,6 +20,11 @@ function normalizeProduct(raw) {
     supportsPickup: raw.supportsPickup !== undefined ? raw.supportsPickup !== false : supportsLocal,
     supportsLocalDelivery: supportsLocal,
     supportsShipping: raw.supportsShipping !== false,
+    imageUrls: Array.isArray(raw.imageUrls) ? raw.imageUrls.filter((url) => typeof url === 'string' && url) : [],
+    primaryImageUrl: Array.isArray(raw.imageUrls) && typeof raw.imageUrls[0] === 'string' ? raw.imageUrls[0] : '',
+    detailDesc: raw.detailDesc || raw.desc || '',
+    categoryIds: Array.isArray(raw.categoryIds) ? raw.categoryIds.filter(Boolean).slice(0, 2) : [],
+    categoryNames: Array.isArray(raw.categoryNames) && raw.categoryNames.length ? raw.categoryNames.filter(Boolean).slice(0, 2) : [raw.category].filter(Boolean),
     // 兼容当前页面和旧本地购物车逻辑；新代码应使用语义更明确的字段。
     supportsLocal,
     specs

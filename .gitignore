@@ -12,8 +12,17 @@ node_modules/
 dist/
 build/
 coverage/
+.deploy/
 .env
 .env.*
+*.pem
+*.p12
+*.pfx
+*.key
+*.crt
+*.cer
+密钥/
+密码/
 *.log
 *.tmp
 

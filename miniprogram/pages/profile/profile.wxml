@@ -1,11 +1,11 @@
 <view class="page tab-page profile-page">
-  <view class="profile-hero"><view class="avatar">麦</view><view class="profile-copy"><text class="profile-kicker">麦香小屋 · BREAD CLUB</text><text class="profile-name">麦香朋友</text><text class="subtitle">好面包，慢慢吃。</text></view><view class="hero-bread"><view></view></view></view>
-  <view class="order-shortcut section" bindtap="orders"><view><text class="scene-tag">我的订单</text><text class="shortcut-title">{{orderHeadline}}</text><text class="subtitle">{{orderHint}}</text></view><text class="shortcut-arrow">›</text></view>
+  <view wx:if="{{content.brand.visible}}" class="profile-hero"><view class="avatar"><image wx:if="{{content.brand.imageUrl}}" src="{{content.brand.imageUrl}}" mode="aspectFill"/><text wx:else>麦</text></view><view class="profile-copy"><text class="profile-kicker">{{content.brand.kicker}}</text><text class="profile-name">{{content.brand.title}}</text><text class="subtitle">{{content.brand.subtitle}}</text></view><view class="hero-bread"><view></view></view></view>
+  <view class="order-shortcut section" bindtap="orders"><view><text class="scene-tag">{{content.orderCard.label}}</text><text class="shortcut-title">{{orderHeadline}}</text><text class="subtitle">{{orderHint}}</text></view><text class="shortcut-arrow">›</text></view>
   <view class="card section auth-card"><view class="row"><text class="product-name">云端登录</text><text class="pill">{{authStatusLabel}}</text></view><text class="subtitle">{{authMessage}}</text><button wx:if="{{canRetryAuth}}" class="text-button auth-retry" bindtap="retryAuth">重试登录</button></view>
   <view class="section"><view class="section-head"><text class="title section-heading">常用服务</text><text class="service-note">为下一次出炉做准备</text></view><view class="profile-menu">
     <view class="menu-item" bindtap="orders"><view class="menu-icon order-icon">▤</view><view class="menu-copy"><text>我的订单</text><text>查看自取与配送订单</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="addresses"><view class="menu-icon address-icon">⌖</view><view class="menu-copy"><text>收货地址</text><text>管理常用收货信息</text></view><text class="menu-arrow">›</text></view>
     <view class="menu-item" bindtap="stores"><view class="menu-icon store-icon">⌂</view><view class="menu-copy"><text>我的门店</text><text>查看收藏与常用门店</text></view><text class="menu-arrow">›</text></view>
   </view></view>
-  <view class="profile-note"><text>今日面包小贴士</text><text>面包室温密封保存，复烤 3 分钟风味更佳。</text></view>
+  <view wx:if="{{content.tip.visible}}" class="profile-note"><text>{{content.tip.title}}</text><text>{{content.tip.text}}</text></view>
 </view>

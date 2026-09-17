@@ -1,11 +1,11 @@
 const cloud = require('wx-server-sdk')
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV })
 const db = cloud.database()
-const FEE_SNAPSHOT_VERSION = 'mock-cloud1-v1'
+const { ALL_REQUIRED_PRODUCT_IDS, ZERO_PRICE_REQUIRED_PRODUCT_IDS, validateRequiredShippingItems, canonicalItems, publicAddressSnapshot } = require('./contract')
+const FEE_SNAPSHOT_VERSION = 'delivery-required-products-v4'
 const QUOTE_TTL_SECONDS = 600
-const INSULATION_FEE_FEN = 200
-const LOCAL_DELIVERY_FEE_FEN = 600
-const SHIPPING_POSTAGE_FEN = 1200
+const INSULATION_FEE_FEN = 0
+const LOCAL_DELIVERY_FEE_FEN = 0
 function ok(data) { return { ok: true, data } }
 function fail(code, message) { return { ok: false, error: { code, message } } }
 function openid() { return cloud.getWXContext().OPENID }
@@ -28,9 +28,11 @@ async function productSnapshot(item, method) {
   if (product.soldOut) return { error: 'PRODUCT_SOLD_OUT' }
   if (method === 'local' && product.supportsLocalDelivery === false) return { error: 'PRODUCT_UNAVAILABLE_FOR_SCENE' }
   if (method === 'shipping' && product.supportsShipping === false) return { error: 'PRODUCT_UNAVAILABLE_FOR_SCENE' }
+  if (ALL_REQUIRED_PRODUCT_IDS.includes(product.productId) && product.category !== '拍前必读') return { error: 'DELIVERY_REQUIRED_ITEM_INVALID' }
   const spec = (product.specs || []).find((entry) => (entry.specId || entry.id) === item.specId && entry.enabled !== false)
   if (!spec) return { error: 'SPEC_NOT_FOUND' }
-  const unitPriceFen = Number(product.deliveryPriceFen || product.priceFen) + Number(spec.extraFeeFen || 0)
+  const configuredPriceFen = Number(product.deliveryPriceFen || product.priceFen) + Number(spec.extraFeeFen || 0)
+  const unitPriceFen = ZERO_PRICE_REQUIRED_PRODUCT_IDS.has(product.productId) ? 0 : configuredPriceFen
   return { product, spec, snapshot: { productId: product.productId, productName: product.name, specId: spec.specId || spec.id, specName: spec.name, unitPriceFen, quantity: item.quantity, lineTotalFen: unitPriceFen * item.quantity, artClass: product.artClass || '' } }
 }
 async function quote(owner, event) {
@@ -39,17 +41,51 @@ async function quote(owner, event) {
   const address = await getAddress(owner, event.addressId)
   if (!address) return fail('ADDRESS_NOT_FOUND', '请选择收货地址')
   if (!addressComplete(address)) return fail('ADDRESS_INCOMPLETE', '收货地址信息不完整')
+  if (method === 'shipping' && address.supportsShipping === false) return fail('ADDRESS_UNAVAILABLE_FOR_METHOD', '当前地址不支持快递邮寄')
+  if (method === 'local' && address.supportsLocal === false) return fail('ADDRESS_UNAVAILABLE_FOR_METHOD', '当前地址超出同城配送范围')
+  const inputItems = canonicalItems(event.items)
+  if (!inputItems) return fail('INVALID_INPUT', '商品明细无效或存在重复规格')
+  const requiredItems = validateRequiredShippingItems(inputItems, method)
+  if (!requiredItems.ok) return fail(requiredItems.code, `${method === 'shipping' ? '快递邮寄' : '同城外卖'}必须包含对应三个拍前必读商品且数量各为 1`)
   const snapshots = []
-  for (const item of Array.isArray(event.items) ? event.items : []) {
+  for (const item of inputItems) {
     const result = await productSnapshot(item, method)
     if (result.error) return fail(result.error, '商品当前不可按此配送方式下单')
     snapshots.push(result.snapshot)
   }
   if (!snapshots.length) return fail('INVALID_INPUT', '购物车为空')
   const subtotalFen = snapshots.reduce((sum, item) => sum + item.lineTotalFen, 0)
-  const transportFeeFen = method === 'local' ? LOCAL_DELIVERY_FEE_FEN : SHIPPING_POSTAGE_FEN
+  const insulationFeeFen = method === 'local' ? INSULATION_FEE_FEN : 0
+  const transportFeeFen = method === 'local' ? LOCAL_DELIVERY_FEE_FEN : 0
   const calculatedAt = isoNow()
-  return { status: 'ready', deliveryMethod: method, insulationFeeFen: INSULATION_FEE_FEN, deliveryFeeFen: method === 'local' ? transportFeeFen : 0, postageFen: method === 'shipping' ? transportFeeFen : 0, transportFeeFen, subtotalFen, totalFen: subtotalFen + INSULATION_FEE_FEN + transportFeeFen, message: '', source: 'mock', feeSnapshotVersion: FEE_SNAPSHOT_VERSION, calculatedAt, quotedAt: calculatedAt, expiresAt: isoAfter(QUOTE_TTL_SECONDS), items: snapshots }
+  const expiresAt = isoAfter(QUOTE_TTL_SECONDS)
+  const quoteId = `quote-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
+  const quote = {
+    quoteId,
+    ownerOpenId: owner,
+    addressId: event.addressId,
+    deliveryMethod: method,
+    inputItems,
+    items: snapshots,
+    addressSnapshot: publicAddressSnapshot(address),
+    status: 'issued',
+    source: 'mock',
+    feeSnapshotVersion: FEE_SNAPSHOT_VERSION,
+    insulationFeeFen,
+    deliveryFeeFen: method === 'local' ? transportFeeFen : 0,
+    postageFen: 0,
+    transportFeeFen,
+    subtotalFen,
+    totalFen: subtotalFen + insulationFeeFen + transportFeeFen,
+    message: '',
+    calculatedAt,
+    quotedAt: calculatedAt,
+    expiresAt,
+    createdAt: calculatedAt,
+    updatedAt: calculatedAt
+  }
+  await db.collection('feeQuotes').add({ data: quote })
+  return { status: 'ready', quoteId, deliveryMethod: method, insulationFeeFen, deliveryFeeFen: quote.deliveryFeeFen, postageFen: quote.postageFen, transportFeeFen, subtotalFen, totalFen: quote.totalFen, message: '', source: 'mock', feeSnapshotVersion: FEE_SNAPSHOT_VERSION, calculatedAt, quotedAt: calculatedAt, expiresAt, items: snapshots }
 }
 exports.main = async (event) => {
   const owner = openid()

@@ -18,9 +18,11 @@ function call(action, payload) {
   })
 }
 
-function listProducts() { return call('listProducts') }
-function getProduct(productId) { return call('getProduct', { productId }) }
+function listProducts(purchaseScene, deliveryMethod) { return call('listProducts', { purchaseScene, ...(deliveryMethod ? { deliveryMethod } : {}) }) }
+function listHomeRecommendations() { return call('listHomeRecommendations') }
+function getProduct(productId, purchaseScene, deliveryMethod) { return call('getProduct', { productId, purchaseScene, ...(deliveryMethod ? { deliveryMethod } : {}) }) }
 function listStores() { return call('listStores') }
 function getStore(storeId) { return call('getStore', { storeId }) }
+function getPageConfiguration(pageId) { return call('getPageConfiguration', { pageId }) }
 
-module.exports = { listProducts, getProduct, listStores, getStore }
+module.exports = { listProducts, listHomeRecommendations, getProduct, listStores, getStore, getPageConfiguration }

@@ -59,7 +59,7 @@ Page({
 
   loadContext() {
     this.setData({ contextMessage: '正在读取真实微信账号下的地址、商品和订单…' })
-    Promise.all([addressRemote.list(), catalogRemote.listProducts(), catalogRemote.listStores(), orderRemote.list()]).then((results) => {
+    Promise.all([addressRemote.list(), catalogRemote.listProducts('pickup'), catalogRemote.listStores(), orderRemote.list()]).then((results) => {
       const addresses = results[0].addresses || []
       const products = results[1].products || []
       const stores = results[2].stores || []

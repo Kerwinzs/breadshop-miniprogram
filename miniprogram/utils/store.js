@@ -2,6 +2,7 @@ const { products, stores } = require('./mock')
 const feeService = require('./fee-service')
 const catalogCache = require('./catalog-cache')
 const catalogLocal = require('./catalog-local')
+const { isShippingRequiredItem, reconcileShippingCart } = require('./shipping-required-items')
 const STORAGE_KEY = 'breadshopState'
 const PICKUP_FLOW = ['已下单', '制作中', '待自取', '已完成']
 
@@ -19,7 +20,7 @@ function normalizeCartItem(item) {
   if (!productId || !Number.isFinite(baseFen) || baseFen < 0) return null
   const quantity = Math.floor(Number(item.quantity) || 0)
   if (quantity <= 0) return null
-  return { id: item.id || `${productId}:${specId}`, productId, specId, name: item.name || (product && product.name) || '未知商品', specName, unitPriceFen: baseFen, quantity, artClass: item.artClass || (product && product.artClass) || '' }
+  return { id: item.id || `${productId}:${specId}`, productId, specId, name: item.name || (product && product.name) || '未知商品', specName, unitPriceFen: baseFen, quantity: item.shippingRequired ? 1 : quantity, artClass: item.artClass || (product && product.artClass) || '', category: item.category || (product && product.category) || '', shippingRequired: item.shippingRequired === true, locked: item.locked === true }
 }
 function mergeCartItems(existingItems, incomingItems) {
   const result = []
@@ -34,7 +35,10 @@ function mergeCartItems(existingItems, incomingItems) {
 function ensureStateShape(existing) {
   const state = existing && typeof existing === 'object' ? Object.assign({}, existing) : {}
   const initial = createInitialState()
-  if (!Array.isArray(state.pickupCartItems)) state.pickupCartItems = Array.isArray(state.cartItems) ? state.cartItems : []
+  // Legacy `cartItems` did not carry a purchase scene, so it must not be
+  // guessed as pickup: entering the pickup flow must never add products.
+  // Only explicitly scene-scoped carts are retained.
+  if (!Array.isArray(state.pickupCartItems)) state.pickupCartItems = []
   if (!Array.isArray(state.deliveryCartItems)) state.deliveryCartItems = []
   state.pickupCartItems = mergeCartItems([], state.pickupCartItems)
   state.deliveryCartItems = mergeCartItems([], state.deliveryCartItems)
@@ -50,6 +54,7 @@ function saveState(state) { const next = ensureStateShape(state); wx.setStorageS
 function patchState(partial) { return saveState(Object.assign({}, getState(), partial || {})) }
 function getCart(scene) { const state = getState(); return scene === 'delivery' ? state.deliveryCartItems : state.pickupCartItems }
 function isCartItemAvailable(item, scene, deliveryMethod) {
+  if (scene === 'delivery' && isShippingRequiredItem(item)) return true
   const product = getProduct(item.productId)
   if (!product || product.soldOut) return false
   if (scene === 'pickup') return product.supportsPickup !== undefined ? product.supportsPickup !== false : product.supportsLocal !== false
@@ -60,6 +65,7 @@ function getUnavailableCartItems(scene) {
   return getCart(scene).filter((item) => !isCartItemAvailable(item, scene, method))
 }
 function setCart(scene, items) { return patchState({ [scene === 'delivery' ? 'deliveryCartItems' : 'pickupCartItems']: mergeCartItems([], items) }) }
+function setDeliveryMethod(method, products) { const deliveryMethod = method === 'shipping' ? 'shipping' : 'local', state = getState(), deliveryCartItems = reconcileShippingCart(state.deliveryCartItems, deliveryMethod, products); return patchState({ deliveryMethod, deliveryCartItems }) }
 function getStore(storeId) { return catalogCache.getStore(storeId) || catalogLocal.getStore(storeId) || stores.find((item) => item.id === storeId) || null }
 function getSelectedStore() { return getStore(getState().storeId) }
 function setSelectedStore(storeId) { if (!getStore(storeId)) return null; patchState({ storeId }); return getStore(storeId) }
@@ -90,11 +96,11 @@ function advanceDeliveryOrder(orderId) { const order = getOrder(orderId); if (!o
 function createDeliveryOrder() {
   const state = getState(), address = getSelectedAddress(), items = mergeCartItems([], state.deliveryCartItems), method = state.deliveryMethod || 'local', fee = feeService.calculateDeliveryFees({ deliveryMethod: method, address, items })
   if (!items.length) throw new Error('购物车为空'); if (getUnavailableCartItems('delivery').length) throw new Error('有商品已售罄或暂不支持当前配送方式，请返回购物车调整'); if (fee.status !== 'ready') throw new Error(fee.message || '配送费用暂无法计算')
-  const snapshotItems = items.map((item) => ({ productId: item.productId, name: item.name, specId: item.specId, specName: item.specName, unitPriceFen: item.unitPriceFen, quantity: item.quantity, lineTotalFen: item.unitPriceFen * item.quantity, artClass: item.artClass }))
-  const subtotalFen = snapshotItems.reduce((sum, item) => sum + item.lineTotalFen, 0), totalFen = subtotalFen + fee.insulationFeeFen + fee.transportFeeFen
+  const snapshotItems = items.map((item) => ({ productId: item.productId, name: item.name, specId: item.specId, specName: item.specName, unitPriceFen: item.unitPriceFen, quantity: item.quantity, lineTotalFen: item.unitPriceFen * item.quantity, artClass: item.artClass, category: item.category, shippingRequired: item.shippingRequired === true, locked: item.locked === true }))
+  const subtotalFen = snapshotItems.reduce((sum, item) => sum + item.lineTotalFen, 0), totalFen = method === 'shipping' ? subtotalFen : subtotalFen + fee.insulationFeeFen + fee.transportFeeFen
   const order = { id: `MOCK-${Date.now()}`, purchaseScene: 'delivery', scene: method === 'shipping' ? '快递邮寄' : '同城外卖', sceneLabel: method === 'shipping' ? '快递邮寄' : '同城外卖', deliveryMethod: method, orderStatus: '已下单', address: Object.assign({}, address, { fullAddress: `${address.province}${address.city}${address.district}${address.detail}` }), items: snapshotItems, subtotalFen, insulationFeeFen: fee.insulationFeeFen, deliveryFeeFen: fee.deliveryFeeFen, postageFen: fee.postageFen, totalFen, createdAt: new Date().toISOString() }
   saveState(Object.assign({}, state, { deliveryCartItems: [], orders: [order].concat(state.orders) })); return order
 }
 function reorder(orderId) { const order = getOrder(orderId); if (!order || order.orderStatus !== '已完成') return { added: 0, unavailable: [] }; const available = [], unavailable = []; (order.items || []).forEach((item) => { const product = getProduct(item.productId); const method = order.purchaseScene === 'delivery' ? order.deliveryMethod : null; const pickupUnavailable = !product || product.supportsPickup === false; const localUnavailable = !product || product.supportsLocalDelivery === false; const shippingUnavailable = !product || product.supportsShipping === false; if (!product || product.soldOut || (method === null && pickupUnavailable) || (method === 'local' && localUnavailable) || (method === 'shipping' && shippingUnavailable)) unavailable.push(item.name); else available.push(item) }); setCart(order.purchaseScene === 'delivery' ? 'delivery' : 'pickup', mergeCartItems(getCart(order.purchaseScene === 'delivery' ? 'delivery' : 'pickup'), available)); if (order.purchaseScene === 'delivery') patchState({ deliveryMethod: order.deliveryMethod }); return { added: available.length, unavailable }
 }
-module.exports = { STORAGE_KEY, createInitialState, ensureStateShape, getState, saveState, patchState, getCart, isCartItemAvailable, getUnavailableCartItems, setCart, getOrders, replaceOrders, getOrder, createOrder, updateOrder, getStore, getSelectedStore, setSelectedStore, getSelectedAddress, setSelectedAddress, saveAddress, removeAddress, replaceAddresses, normalizeCartItem, mergeCartItems, createPickupOrder, createDeliveryOrder, cancelOrder, advanceMockOrder, advanceDeliveryOrder, reorder }
+module.exports = { STORAGE_KEY, createInitialState, ensureStateShape, getState, saveState, patchState, getCart, isCartItemAvailable, getUnavailableCartItems, setCart, setDeliveryMethod, getOrders, replaceOrders, getOrder, createOrder, updateOrder, getStore, getSelectedStore, setSelectedStore, getSelectedAddress, setSelectedAddress, saveAddress, removeAddress, replaceAddresses, normalizeCartItem, mergeCartItems, createPickupOrder, createDeliveryOrder, cancelOrder, advanceMockOrder, advanceDeliveryOrder, reorder }

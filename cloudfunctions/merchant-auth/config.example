@@ -1,0 +1,6 @@
+MERCHANT_ACCOUNT=replace-with-controlled-account
+MERCHANT_PASSWORD_HASH=scrypt$16384$8$1$replace-with-base64url-salt$replace-with-128-char-hex-derived-key
+MERCHANT_TOKEN_SECRET=replace-with-random-32-byte-secret
+MERCHANT_ROLE_ID=merchant_operator
+MERCHANT_PERMISSIONS=orders.read,orders.address.read,orders.advance,orders.cancel,products.read,products.write,products.delete,products.toggleSoldOut,stores.read,stores.create,stores.write,stores.delete,stores.toggleOpen,auditLogs.read,payments.read,refunds.create,refunds.retry
+MERCHANT_TOKEN_TTL_SECONDS=900

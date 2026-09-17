@@ -1,0 +1,22 @@
+const assert = require('assert')
+const fs = require('fs')
+const path = require('path')
+
+const source = fs.readFileSync(path.join(__dirname, '..', 'backend', 'src', 'App.tsx'), 'utf8')
+assert.ok(source.includes('今日订单金额'), 'dashboard keeps order amount distinct')
+assert.ok(source.includes('今日实付'))
+assert.ok(source.includes('今日退款'))
+assert.ok(source.includes('今日净实收'))
+assert.ok(source.includes('不是渠道对账单或财务报表') || source.includes('financialNotice'), 'dashboard must disclose non-financial-report scope')
+assert.ok(source.includes('支付与退款'))
+assert.ok(source.includes('订单支付成功后才能进入制作'))
+assert.ok(source.includes('退款不会立即标记成功'))
+assert.ok(source.includes("session?.permissions.includes('payments.read')"))
+assert.ok(source.includes("session?.permissions.includes('refunds.retry')"))
+
+const api = fs.readFileSync(path.join(__dirname, '..', 'backend', 'src', 'admin-api.ts'), 'utf8')
+assert.ok(api.includes("paymentStatus?: 'pending' | 'paid' | 'closed'"))
+assert.ok(api.includes("refundStatus?: 'none' | 'pending' | 'succeeded' | 'failed'"))
+assert.ok(api.includes('retryRefund'))
+
+console.log('backend payment UI contract passed')

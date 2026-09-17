@@ -1,7 +1,53 @@
 <view class="page with-fixed-action">
-  <view class="detail-art art {{product.artClass}}"><text class="fresh-stamp">今日现烤</text><text class="art-note">{{product.category}} · BUTTER BAKED</text></view>
-  <view class="detail-intro section"><text class="scene-tag">到店自取 · 出炉后 2 小时风味最佳</text><view class="detail-name-row"><text class="title">{{product.name}}</text><text class="sales">本周已售 126</text></view><text class="detail-copy">{{product.detailDesc}}</text><view class="detail-price-row"><text class="price">{{price}}</text><text class="reference-price">外卖价 {{deliveryPrice}}</text></view></view>
-  <view class="flavor-list section"><text>黄油酥香</text><text>新鲜出炉</text><text>微甜回甘</text></view>
-  <view class="card section"><view class="row"><text class="product-name">选择规格</text><text class="subtitle">{{selectedSpecName ? '已选：' + selectedSpecName : '请选择规格'}}</text></view><view class="spec-list"><block wx:for="{{specs}}" wx:key="id"><button class="spec {{selectedSpecName===item.name?'active':''}}" data-index="{{index}}" bindtap="selectSpec">{{item.name}}<text wx:if="{{item.extraFeeFen}}"> +¥{{item.extraFeeFen / 100}}</text></button></block></view></view>
-  <view class="action-bar detail-action"><view class="detail-action-inner"><button class="cart-entry" bindtap="cart">购物车<text>{{cartCount}}</text></button><view class="stepper"><button bindtap="decrease">−</button><text>{{quantity}}</text><button bindtap="increase">+</button></view><button class="btn add-button" bindtap="add">加入自取购物车</button></view></view>
+  <view class="detail-art art {{product.artClass}}">
+<swiper wx:if="{{product.imageUrls && product.imageUrls.length}}" class="detail-swiper" current="{{imageIndex}}" indicator-dots="{{product.imageUrls.length > 1}}" indicator-color="rgba(255,255,255,.65)" indicator-active-color="#b85e6d" bindchange="changeImage">
+<block wx:for="{{product.imageUrls}}" wx:key="*this">
+<swiper-item><view class="detail-slide"><image class="detail-photo" src="{{item}}" mode="aspectFill" data-index="{{index}}" bindtap="previewImage" /></view></swiper-item>
+</block>
+</swiper>
+<text wx:if="{{product.imageUrls && product.imageUrls.length}}" class="image-count">{{imageIndex + 1}} / {{product.imageUrls.length}}</text>
+<text class="fresh-stamp">今日现烤</text>
+<text class="art-note">{{product.category}} · BUTTER BAKED</text>
+</view>
+  <view class="detail-intro section">
+<text class="scene-tag">到店自取 · 出炉后 2 小时风味最佳</text>
+<view class="detail-name-row">
+<text class="title">{{product.name}}</text>
+<text class="sales">本周已售 126</text>
+</view>
+<text class="detail-copy">{{product.detailDesc}}</text>
+<view class="detail-price-row">
+<text class="price">{{price}}</text>
+<text class="reference-price">外卖价 {{deliveryPrice}}</text>
+</view>
+</view>
+  <view class="flavor-list section">
+<text>黄油酥香</text>
+<text>新鲜出炉</text>
+<text>微甜回甘</text>
+</view>
+  <view class="card section">
+<view class="row">
+<text class="product-name">选择规格</text>
+<text class="subtitle">{{selectedSpecName ? '已选：' + selectedSpecName : '请选择规格'}}</text>
+</view>
+<view class="spec-list">
+<block wx:for="{{specs}}" wx:key="id">
+<button class="spec {{selectedSpecName===item.name?'active':''}}" data-index="{{index}}" bindtap="selectSpec">{{item.name}}<text wx:if="{{item.extraFeeFen}}"> +¥{{item.extraFeeFen / 100}}</text>
+</button>
+</block>
+</view>
+</view>
+  <view class="action-bar detail-action">
+<view class="detail-action-inner">
+<button class="cart-entry" bindtap="cart">购物车<text>{{cartCount}}</text>
+</button>
+<view class="stepper">
+<button bindtap="decrease">−</button>
+<text>{{quantity}}</text>
+<button bindtap="increase">+</button>
+</view>
+<button class="btn add-button" bindtap="add">加入自取购物车</button>
+</view>
+</view>
 </view>

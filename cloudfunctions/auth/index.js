@@ -11,21 +11,21 @@ exports.main = async (event) => {
   const context = cloud.getWXContext()
   const openid = context && context.OPENID
   if (!openid) return fail('AUTH_REQUIRED', '无法取得微信登录身份')
-  const now = db.serverDate()
+  if (typeof db.runTransaction !== 'function') return fail('INTERNAL_ERROR', '用户服务未启用事务')
   try {
-    const existing = await db.collection('users').where({ openid }).limit(1).get()
-    let userId
-    let isNew = false
-    if (existing.data && existing.data[0]) {
-      userId = existing.data[0]._id
-      await db.collection('users').doc(userId).update({ data: { status: 'active', updatedAt: now, lastLoginAt: now } })
-    } else {
-      const created = await db.collection('users').add({ data: { openid, status: 'active', createdAt: now, updatedAt: now, lastLoginAt: now } })
-      userId = created._id
-      isNew = true
-    }
-    // 不把 openid、头像、昵称或手机号返回给小程序。
-    return ok({ userId, status: 'authenticated', isNew })
+    const result = await db.runTransaction(async (transaction) => {
+      const collection = transaction.collection('users')
+      const existing = await collection.where({ openid }).limit(1).get()
+      const now = db.serverDate()
+      if (existing.data && existing.data[0]) {
+        const user = existing.data[0]
+        await collection.doc(user._id).update({ data: { status: 'active', updatedAt: now, lastLoginAt: now } })
+        return { userId: user._id, status: 'authenticated', isNew: false }
+      }
+      const created = await collection.add({ data: { openid, status: 'active', createdAt: now, updatedAt: now, lastLoginAt: now } })
+      return { userId: created._id, status: 'authenticated', isNew: true }
+    })
+    return ok(result)
   } catch (error) {
     console.error('auth.login failed', error && error.message)
     return fail('INTERNAL_ERROR', '登录暂时不可用，请稍后重试')

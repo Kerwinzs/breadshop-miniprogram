@@ -1,0 +1,20 @@
+const assert = require('assert')
+const fs = require('fs')
+const path = require('path')
+
+const app = fs.readFileSync(path.join(__dirname, '..', 'backend', 'src', 'App.tsx'), 'utf8')
+const css = fs.readFileSync(path.join(__dirname, '..', 'backend', 'src', 'styles.css'), 'utf8')
+const html = fs.readFileSync(path.join(__dirname, '..', 'backend', 'index.html'), 'utf8')
+
+assert.ok(app.includes('<ConfigProvider theme='), 'admin UI must use the shared brand theme')
+assert.ok(html.includes('<title>UDii 有笛-商家端</title>'), 'browser title must expose the merchant product name')
+assert.ok(app.includes('<Typography.Title level={2}>UDii 有笛-商家端</Typography.Title>'), 'login page must expose the merchant product name')
+assert.ok(app.includes('aria-label="UDii 有笛-商家端"') && app.includes('UDii 有笛</b><small>商家端'), 'header must expose an accessible compact brand hierarchy')
+assert.ok(app.includes('安全提示'), 'side navigation must explain audit safety')
+assert.ok(app.includes('title="订单工作台" description='), 'orders must have a task-oriented page introduction')
+assert.ok(app.includes('title="商品与分类" description='), 'products must have a clear page introduction')
+assert.ok(css.includes('--sky: #d3e8f4') && css.includes('--coral: #ffbcbd'), 'admin theme must follow the brand palette')
+assert.ok(css.includes('@media (max-width: 760px)'), 'admin UI must provide a narrow-screen layout')
+assert.ok(css.includes('.order-drawer') && css.includes('.product-modal'), 'complex work surfaces must have focused styling')
+
+console.log('backend usability UI contract passed')

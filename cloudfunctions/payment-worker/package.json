@@ -1,0 +1,1 @@
+{"name":"breadshop-payment-worker","version":"1.0.0","private":true,"dependencies":{"wx-server-sdk":"^3.0.1"}}

@@ -1,0 +1,56 @@
+const assert = require('assert')
+const fs = require('fs')
+const Module = require('module')
+const originalLoad = Module._load
+Module._load = function (request, parent, isMain) {
+  if (request === 'wx-server-sdk') return { DYNAMIC_CURRENT_ENV: 'test', init() {}, database: () => ({ serverDate: () => 'server-date' }) }
+  return originalLoad.call(this, request, parent, isMain)
+}
+const merchant = require('../cloudfunctions/merchant-admin')
+Module._load = originalLoad
+assert.strictEqual(merchant.ACTION_PERMISSIONS.createProductCategory, 'products.write')
+assert.strictEqual(merchant.ACTION_PERMISSIONS.saveProductCategory, 'products.write')
+assert.strictEqual(merchant.ACTION_PERMISSIONS.deleteProductCategory, 'products.delete')
+assert.deepStrictEqual(merchant.patch({ name: ' 欧包 ', sortOrder: 20, enabled: false }, ['name', 'sortOrder', 'enabled'], 'category'), { name: '欧包', sortOrder: 20, enabled: false })
+assert.strictEqual(merchant.patch({ name: '', sortOrder: 0 }, ['name', 'sortOrder'], 'category'), null)
+assert.strictEqual(merchant.patch({ name: '欧包', sortOrder: -1 }, ['name', 'sortOrder'], 'category'), null)
+assert.deepStrictEqual(merchant.patch({ specs: [{ specId: 'large', name: ' 大份 ', extraFeeFen: 200, enabled: true }] }, ['specs'], 'product'), { specs: [{ specId: 'large', name: '大份', extraFeeFen: 200, enabled: true }] })
+assert.strictEqual(merchant.patch({ specs: [{ specId: 'same', name: '大份', extraFeeFen: 0 }, { specId: 'same', name: '小份', extraFeeFen: 0 }] }, ['specs'], 'product'), null)
+assert.strictEqual(merchant.patch({ specs: [{ specId: 'bad', name: '规格', extraFeeFen: -1 }] }, ['specs'], 'product'), null)
+assert.strictEqual(merchant.patch({ specs: [] }, ['specs'], 'product'), null)
+assert.strictEqual(merchant.patch({ specs: [{ specId: 'off', name: '停用规格', extraFeeFen: 0, enabled: false }] }, ['specs'], 'product'), null)
+assert.deepStrictEqual(merchant.patch({ categoryIds: ['bread', 'dessert'] }, ['categoryIds'], 'product'), { categoryIds: ['bread', 'dessert'] })
+assert.strictEqual(merchant.patch({ categoryIds: [] }, ['categoryIds'], 'product'), null)
+assert.strictEqual(merchant.patch({ categoryIds: ['a', 'b', 'c'] }, ['categoryIds'], 'product'), null)
+assert.strictEqual(merchant.patch({ categoryIds: ['bread', 'bread'] }, ['categoryIds'], 'product'), null)
+assert.deepStrictEqual(merchant.dtoCategory({ categoryId: 'bread', name: '欧包', sortOrder: 20, enabled: false, version: 2 }), { categoryId: 'bread', name: '欧包', sortOrder: 20, enabled: false, version: 2, updatedAt: undefined })
+const adminSource = fs.readFileSync(require.resolve('../backend/src/App.tsx'), 'utf8')
+assert.match(adminSource, /商品分类管理/); assert.match(adminSource, /删除分类/); assert.match(adminSource, /商城卡片简述/); assert.match(adminSource, /商品详情介绍/)
+assert.match(adminSource, /规格选项/); assert.match(adminSource, /新增规格/); assert.match(adminSource, /停用/); assert.match(adminSource, /上移/)
+assert.match(adminSource, /至少启用一个规格/)
+assert.match(adminSource, /mode="multiple" maxCount=\{2\}/)
+const catalogSource = fs.readFileSync(require.resolve('../cloudfunctions/catalog/index.js'), 'utf8')
+assert.match(catalogSource, /productCategories unavailable, deriving from products/)
+Module._load = function (request, parent, isMain) {
+  if (request === 'wx-server-sdk') return { DYNAMIC_CURRENT_ENV: 'test', init() {}, database: () => ({}) }
+  return originalLoad.call(this, request, parent, isMain)
+}
+delete require.cache[require.resolve('../cloudfunctions/catalog')]
+const catalog = require('../cloudfunctions/catalog')
+Module._load = originalLoad
+assert.deepStrictEqual(catalog.productDto({ productId: 'bread', specs: [{ specId: 'on', name: '可选', extraFeeFen: 0, enabled: true }, { specId: 'off', name: '停用', extraFeeFen: 100, enabled: false }] }).specs, [{ specId: 'on', name: '可选', extraFeeFen: 0, enabled: true }])
+assert.strictEqual(catalog.availableFor({ enabled: true, supportsPickup: false, supportsLocalDelivery: true, supportsShipping: true }, 'pickup'), false)
+assert.strictEqual(catalog.availableFor({ enabled: true, supportsPickup: false, supportsLocalDelivery: true, supportsShipping: false }, 'delivery', 'local'), true)
+assert.strictEqual(catalog.availableFor({ enabled: true, supportsPickup: true, supportsLocalDelivery: true, supportsShipping: false }, 'delivery', 'shipping'), false)
+assert.strictEqual(catalog.availableFor({ enabled: false, supportsPickup: true, supportsLocalDelivery: true, supportsShipping: true }, 'pickup'), false)
+assert.strictEqual(catalog.availableFor({ enabled: true }, 'pickup'), true)
+assert.strictEqual(catalog.availableFor({ enabled: true, supportsLocalDelivery: false, supportsShipping: true }, 'delivery'), true)
+assert.strictEqual(catalog.validScene(undefined, undefined), true)
+assert.strictEqual(catalog.validScene('delivery', undefined), true)
+assert.strictEqual(catalog.validScene('pickup', 'local'), false)
+assert.strictEqual(catalog.validScene('unknown', undefined), false)
+const normalizer = require('../miniprogram/utils/catalog-normalizer')
+assert.strictEqual(normalizer.normalizeProduct({ productId: 'bread', desc: '简述', detailDesc: '' }).detailDesc, '简述')
+assert.deepStrictEqual(normalizer.normalizeProduct({ productId: 'bread', category: '欧包' }).categoryNames, ['欧包'])
+assert.deepStrictEqual(normalizer.normalizeProduct({ productId: 'bread', category: '欧包', categoryIds: ['bread', 'new'], categoryNames: ['欧包', '新品'] }).categoryNames, ['欧包', '新品'])
+console.log('merchant product category tests passed')

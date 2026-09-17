@@ -1,1 +1,51 @@
-<view class="page fixed-space"><view class="hero" style="height:420rpx"><view class="art" style="height:300rpx;margin:0"></view></view><view class="section"><text class="subtitle">外卖/邮寄 · 另计保温包装费及配送费/邮费</text><view class="title" style="margin:14rpx 0">{{product.name}}</view><text class="subtitle">{{product.desc}}</text><view class="row"><text class="price">{{price}}</text><text class="subtitle">已售 128</text></view></view><view class="card section"><text class="product-name">规格选择</text><view class="tabs"><block wx:for="{{specs}}" wx:key="id"><button class="tab {{selectedSpec.id===item.id?'active':''}}" data-index="{{index}}" bindtap="selectSpec">{{item.name}}</button></block></view></view><view class="bar row"><button class="tab" bindtap="cart">购物车 {{cartCount}}</button><view class="stepper"><button bindtap="decrease">−</button><text>{{quantity}}</text><button bindtap="increase">+</button></view><button class="btn" style="flex:1" bindtap="add">加入配送购物车</button></view></view>
+<view class="page with-fixed-action">
+  <view class="detail-art art {{product.artClass}}">
+    <swiper wx:if="{{product.imageUrls && product.imageUrls.length}}" class="detail-swiper" current="{{imageIndex}}" indicator-dots="{{product.imageUrls.length > 1}}" indicator-color="rgba(255,255,255,.65)" indicator-active-color="#b85e6d" bindchange="changeImage">
+      <block wx:for="{{product.imageUrls}}" wx:key="*this">
+        <swiper-item><view class="detail-slide"><image class="detail-photo" src="{{item}}" mode="aspectFill" data-index="{{index}}" bindtap="previewImage" /></view></swiper-item>
+      </block>
+    </swiper>
+    <text wx:if="{{product.imageUrls && product.imageUrls.length}}" class="image-count">{{imageIndex + 1}} / {{product.imageUrls.length}}</text>
+    <text class="fresh-stamp">配送专享</text>
+    <text class="art-note">{{product.category}} · BUTTER BAKED</text>
+  </view>
+  <view class="detail-intro section">
+    <text class="scene-tag">外卖/邮寄 · 另计保温包装费及配送费/邮费</text>
+    <view class="detail-name-row">
+      <text class="title">{{product.name}}</text>
+      <text class="sales">已售 128</text>
+    </view>
+    <text class="detail-copy">{{product.detailDesc}}</text>
+    <view class="detail-price-row">
+      <text class="price">{{price}}</text>
+      <text class="fee-note">配送价</text>
+    </view>
+  </view>
+  <view class="flavor-list section">
+    <text>保温包装</text>
+    <text>同城外卖</text>
+    <text>快递邮寄</text>
+  </view>
+  <view class="card section">
+    <view class="row">
+      <text class="product-name">选择规格</text>
+      <text class="subtitle">{{selectedSpec ? '已选：' + selectedSpec.name : '请选择规格'}}</text>
+    </view>
+    <view class="spec-list">
+      <block wx:for="{{specs}}" wx:key="id">
+        <button class="spec {{selectedSpec.id===item.id?'active':''}}" data-index="{{index}}" bindtap="selectSpec">{{item.name}}<text wx:if="{{item.extraFeeFen}}"> +¥{{item.extraFeeFen / 100}}</text></button>
+      </block>
+    </view>
+  </view>
+  <view class="action-bar detail-action">
+    <view class="detail-action-inner">
+      <button class="cart-entry" bindtap="cart">配送购物车<text>{{cartCount}}</text></button>
+      <view class="stepper">
+        <button bindtap="decrease">−</button>
+        <text>{{quantity}}</text>
+        <button bindtap="increase">+</button>
+      </view>
+      <button class="btn add-button" bindtap="add">加入配送购物车</button>
+    </view>
+  </view>
+</view>

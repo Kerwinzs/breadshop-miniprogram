@@ -1,0 +1,8 @@
+{
+  "name": "breadshop-merchant-admin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Merchant administration cloud function",
+  "engines": { "node": ">=16" },
+  "dependencies": { "wx-server-sdk": "^2.6.3" }
+}
